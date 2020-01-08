@@ -9,6 +9,8 @@ Notes: Anything you want to say about your code that will be helpful in the grad
 #include "RestaurantOrganizer.h"
 
 using namespace std;
+bool equality(int tableCapacity[],int &leftIndex,int &topIndex,int &rightIndex,int &leftChild,int &topChild,int &rightChild,int heap[]);
+bool check(int tableCapacity[],int &leftIndex,int &topIndex,int &rightIndex,int heap[],int numTables);
 void right(int tableCapacity[],int &index,int heap[]);
 void left(int tableCapacity[],int &index,int heap[]);
 RestaurantOrganizer::RestaurantOrganizer(const vector<int> &tableCapacityInput) {
@@ -72,52 +74,12 @@ void RestaurantOrganizer::heapUp(int index) {
 void RestaurantOrganizer::heapDown(int index) {
     // IMPLEMENT ME!
 
-    while ((index * 2 + 1 < numberOfTables) && (tableCapacity[index] <= tableCapacity[index * 2 + 1] ||
-                                                tableCapacity[index] <= tableCapacity[index * 2 + 2])) {
+    while (index * 2 + 1 < numberOfTables) {
 
+        int leftIndex = index * 2 + 1;
+        int rightIndex = index * 2 + 2;
 
-        if(tableCapacity[index * 2 + 1] > tableCapacity[index] && tableCapacity[index*2+2] > tableCapacity[index]){
-
-            if(tableCapacity[index*2+1] > tableCapacity[index*2+2]){
-                left(tableCapacity,index,heap);
-            }else if(tableCapacity[index*2+1] < tableCapacity[index*2+2]){
-                right(tableCapacity,index,heap);
-            }else{
-                if(heap[index*2+1] < heap[index*2+2]){
-                    left(tableCapacity,index,heap);
-                }else{
-                    right(tableCapacity,index,heap);
-                }
-            }
-        }else if(tableCapacity[index*2+1] > tableCapacity[index] && tableCapacity[index*2+1] > tableCapacity[index * 2 + 2]) {
-            left(tableCapacity,index,heap);
-        }else if(tableCapacity[index*2+2] > tableCapacity[index] && tableCapacity[index*2+2] > tableCapacity[index * 2 + 1]){
-            right(tableCapacity,index,heap);
-
-        }else if(tableCapacity[index*2+1] == tableCapacity[index] || tableCapacity[index*2+2] == tableCapacity[index]){
-            if(tableCapacity[index*2+1] == tableCapacity[index] && tableCapacity[index*2+2] == tableCapacity[index]){
-                if(heap[index * 2 + 1] < heap[index * 2 + 2]){
-                    if(heap[index * 2 + 1] < heap[index]){
-                        left(tableCapacity,index,heap);
-                    }else{
-                        return;
-                    }
-                }else if(heap[index * 2 + 2] < heap[index * 2 + 1]){
-                    if(heap[index*2+2] < heap[index]){
-                        right(tableCapacity,index,heap);
-                    }else{
-                        return;
-                    }
-                }
-            }else if(tableCapacity[index*2+1] == tableCapacity[index] && heap[index * 2 + 1] < heap[index]){
-                left(tableCapacity,index,heap);
-            }else if(tableCapacity[index*2+2] == tableCapacity[index] && heap[index * 2 + 2] < heap[index]){
-                right(tableCapacity,index,heap);
-            }else{
-                return;
-            }
-
-        }else{
+        if(!check(tableCapacity, leftIndex, index, rightIndex, heap, numberOfTables)){
             return;
         }
 
@@ -153,4 +115,42 @@ void left(int tableCapacity[],int &index,int heap[]){
     heap[index] = heap[index * 2 + 1];
     heap[index * 2 + 1] = tempIndex;
     index = index * 2 + 1;
+}
+bool check(int tableCapacity[],int &leftIndex,int &topIndex,int &rightIndex,int heap[],int numTables){
+    int leftChild = tableCapacity[leftIndex];
+    int rightChild;
+    if(rightIndex >= numTables){
+        rightChild = -2;
+    }else{
+        rightChild = tableCapacity[rightIndex];
+    }
+    int topChild = tableCapacity[topIndex];
+    if(topChild > leftChild && topChild > rightChild)
+        return false;
+    if(leftChild > topChild && leftChild > rightChild){
+        left(tableCapacity,topIndex,heap);
+    }else if(rightChild > topChild && rightChild > leftChild){
+        right(tableCapacity,topIndex,heap);
+    }else{
+
+       return equality(tableCapacity,leftIndex,topIndex,rightIndex,leftChild,topChild,rightChild,heap);
+    }
+    return true;
+}
+bool equality(int tableCapacity[],int &leftIndex,int &topIndex,int  &rightIndex,int &leftChild,int &topChild,int &rightChild,int heap[]){
+    if(topChild == leftChild && topChild == rightChild){
+        if(heap[topIndex] < heap[rightIndex] && heap[topIndex] < heap[leftIndex]) return false;
+        else if(heap[leftIndex] < heap[rightIndex]) left(tableCapacity,topIndex,heap);
+        else if(heap[leftIndex] > heap[rightIndex]) right(tableCapacity,topIndex,heap);
+    }else if(topChild == leftChild){
+        if(heap[topIndex] < heap[leftIndex]) return false;
+        else left(tableCapacity,topIndex,heap);
+    }else if(topChild == rightChild){
+        if(heap[topIndex] < heap[rightIndex]) return false;
+        else right(tableCapacity,topIndex,heap);
+    }else if(leftChild == rightChild){
+        if(heap[leftIndex] < heap[rightIndex]) left(tableCapacity,topIndex,heap);
+        else right(tableCapacity,topIndex,heap);
+    }
+    return true;
 }
